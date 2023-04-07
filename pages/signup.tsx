@@ -2,11 +2,11 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import HomePage from '@/components/HomePage';
+import SignUpPage from '@/components/SignUpPage';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export default function Home() {
-  //todo: add logic in useeffect to check if user is logged in, if not redirect to login page
+export default function SignUp() {
   return (
     <>
       <Head>
@@ -15,7 +15,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <HomePage />
+      <SignUpPage />
     </>
   );
 }

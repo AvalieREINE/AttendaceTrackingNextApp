@@ -1,11 +1,48 @@
 import { Shojumaru } from 'next/font/google';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Dashboard from './Dashboard';
+import ClassLists from './ClassLists';
+
+enum ContentTypes {
+  DASHBOARD,
+  CLASSLISTS
+}
 function HomePage() {
   // check if logged in, show login or home page
   const [showDropDown, setShowDropDown] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(true);
+  const [selectedContent, setSelectedContent] = useState<number>(0);
   const router = useRouter();
+  const clickRef: any = useRef();
+  useEffect(() => {
+    const checkIfClickedOutside = (e: any) => {
+      if (
+        showDropDown &&
+        clickRef.current &&
+        !clickRef.current.contains(e.target)
+      ) {
+        setShowDropDown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', checkIfClickedOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', checkIfClickedOutside);
+    };
+  }, [showDropDown]);
+
+  const Contents = () => {
+    switch (selectedContent) {
+      case ContentTypes.DASHBOARD:
+        return <Dashboard clickRef={clickRef} />;
+      case ContentTypes.CLASSLISTS:
+        return <ClassLists clickRef={clickRef} />;
+      default:
+        return null;
+    }
+  };
   const Signout = () => {
     // todo: add logic to remove token
     router.push('/signin');
@@ -23,7 +60,7 @@ function HomePage() {
     //   </button>
     // </div>
 
-    <div className="bg-gray-100 font-family-karla flex ">
+    <div className="bg-gray-100 font-family-karla flex min-h-screen ">
       {showSideMenu ? (
         <aside className=" z-20 relative bg-sidebar hidden w-64 sm:block shadow-xl">
           <div className="p-6">
@@ -33,8 +70,8 @@ function HomePage() {
             >
               Admin
             </a>
-            <button className="w-full bg-white cta-btn font-semibold py-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
-              <i className="fas fa-plus mr-3"></i> Enter Data
+            <button className="w-full bg-white cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
+              <i className="fas fa-plus mr-3"></i> Enter Attendance
             </button>
 
             <button className="w-full bg-white cta-btn   py-4 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
@@ -43,12 +80,26 @@ function HomePage() {
           </div>
           <div className="text-white  font-semibold pt-3">
             <button
-              className={`w-full flex items-center text-white py-4 pl-6 nav-item`}
+              onClick={() => {
+                setSelectedContent(ContentTypes.DASHBOARD);
+              }}
+              className={`w-full flex items-center text-white py-4 pl-6   ${
+                selectedContent === ContentTypes.DASHBOARD
+                  ? 'bg-black'
+                  : 'nav-item'
+              }`}
             >
               <i className="fas fa-tachometer-alt mr-3"></i>
               Dashboard
             </button>
-            <button className=" w-full flex items-center  text-white py-4 pl-6 nav-item">
+            <button
+              onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}
+              className={`w-full flex items-center text-white py-4 pl-6   ${
+                selectedContent === ContentTypes.CLASSLISTS
+                  ? 'bg-black'
+                  : 'nav-item'
+              }`}
+            >
               <i className="fas fa-sticky-note mr-3"></i>
               Class Lists
             </button>
@@ -122,13 +173,10 @@ function HomePage() {
           {/* className="isOpen ? 'flex': 'hidden'" */}
           {showSideMenu && (
             <nav className="flex flex-col pt-4">
-              <a
-                href="index.html"
-                className="flex items-center active-nav-link text-white py-2 pl-4 nav-item"
-              >
+              <div className="flex items-center active-nav-link text-white py-2 pl-4 nav-item">
                 <i className="fas fa-tachometer-alt mr-3"></i>
                 Dashboard
-              </a>
+              </div>
               <a
                 href="blank.html"
                 className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
@@ -194,195 +242,7 @@ function HomePage() {
             </nav>
           )}
         </header>
-
-        <div className="w-full overflow-x-hidden border-t flex flex-col ">
-          <main className="w-full flex-grow p-6">
-            <h1 className="text-3xl text-black pb-6">Dashboard</h1>
-
-            <div className="flex flex-wrap mt-6">
-              <div className="w-full lg:w-1/2 pr-0 lg:pr-2">
-                <p className="text-xl pb-3 flex items-center">
-                  <i className="fas fa-plus mr-3"></i> Monthly Reports
-                </p>
-                <div className="p-6 bg-white">
-                  <canvas id="chartOne" width="400" height="200"></canvas>
-                </div>
-              </div>
-              <div className="w-full lg:w-1/2 pl-0 lg:pl-2 mt-12 lg:mt-0">
-                <p className="text-xl pb-3 flex items-center">
-                  <i className="fas fa-check mr-3"></i> Resolved Reports
-                </p>
-                <div className="p-6 bg-white">
-                  <canvas id="chartTwo" width="400" height="200"></canvas>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full mt-12">
-              <p className="text-xl pb-3 flex items-center">
-                <i className="fas fa-list mr-3"></i> Latest Reports
-              </p>
-              <div className="bg-white overflow-auto">
-                <table className="min-w-full bg-white">
-                  <thead className="bg-gray-800 text-white">
-                    <tr>
-                      <th className="w-1/3 text-left py-3 px-4 uppercase font-semibold text-sm">
-                        Name
-                      </th>
-                      <th className="w-1/3 text-left py-3 px-4 uppercase font-semibold text-sm">
-                        Last name
-                      </th>
-                      <th className="text-left py-3 px-4 uppercase font-semibold text-sm">
-                        Phone
-                      </th>
-                      <th className="text-left py-3 px-4 uppercase font-semibold text-sm">
-                        Email
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-700">
-                    <tr>
-                      <td className="w-1/3 text-left py-3 px-4">Lian</td>
-                      <td className="w-1/3 text-left py-3 px-4">Smith</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-200">
-                      <td className="w-1/3 text-left py-3 px-4">Emma</td>
-                      <td className="w-1/3 text-left py-3 px-4">Johnson</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="w-1/3 text-left py-3 px-4">Oliver</td>
-                      <td className="w-1/3 text-left py-3 px-4">Williams</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-200">
-                      <td className="w-1/3 text-left py-3 px-4">Isabella</td>
-                      <td className="w-1/3 text-left py-3 px-4">Brown</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="w-1/3 text-left py-3 px-4">Lian</td>
-                      <td className="w-1/3 text-left py-3 px-4">Smith</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-200">
-                      <td className="w-1/3 text-left py-3 px-4">Emma</td>
-                      <td className="w-1/3 text-left py-3 px-4">Johnson</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="w-1/3 text-left py-3 px-4">Oliver</td>
-                      <td className="w-1/3 text-left py-3 px-4">Williams</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                    <tr className="bg-gray-200">
-                      <td className="w-1/3 text-left py-3 px-4">Isabella</td>
-                      <td className="w-1/3 text-left py-3 px-4">Brown</td>
-                      <td className="text-left py-3 px-4">
-                        <a className="hover:text-blue-500" href="tel:622322662">
-                          622322662
-                        </a>
-                      </td>
-                      <td className="text-left py-3 px-4">
-                        <a
-                          className="hover:text-blue-500"
-                          href="mailto:jonsmith@mail.com"
-                        >
-                          jonsmith@mail.com
-                        </a>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </main>
-        </div>
+        <Contents />
       </div>
     </div>
   );

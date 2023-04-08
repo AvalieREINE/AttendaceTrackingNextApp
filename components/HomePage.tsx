@@ -1,12 +1,16 @@
 import { Shojumaru } from 'next/font/google';
 import { useRouter } from 'next/router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createRef, useEffect, useRef, useState } from 'react';
 import Dashboard from './Dashboard';
 import ClassLists from './ClassLists';
+import AttendanceForm from './AttendanceForm';
 
 enum ContentTypes {
   DASHBOARD,
-  CLASSLISTS
+  CLASSLISTS,
+  ACCOUNT,
+  ATTENDANCE,
+  REMINDER
 }
 function HomePage() {
   // check if logged in, show login or home page
@@ -14,31 +18,35 @@ function HomePage() {
   const [showSideMenu, setShowSideMenu] = useState(true);
   const [selectedContent, setSelectedContent] = useState<number>(0);
   const router = useRouter();
-  const clickRef: any = useRef();
-  useEffect(() => {
-    const checkIfClickedOutside = (e: any) => {
-      if (
-        showDropDown &&
-        clickRef.current &&
-        !clickRef.current.contains(e.target)
-      ) {
-        setShowDropDown(false);
-      }
-    };
+  const ref: any = useRef(null);
+  // useEffect(() => {
+  //   const checkIfClickedOutside = (e: any) => {
+  //     if (!ref.current.contains(e.target)) {
+  //       setShowDropDown(false);
+  //     }
+  //   };
+  //   console.log(ref, 'clickRef home page');
 
-    document.addEventListener('mousedown', checkIfClickedOutside);
+  //   document.addEventListener('click', checkIfClickedOutside, true);
 
-    return () => {
-      document.removeEventListener('mousedown', checkIfClickedOutside);
-    };
-  }, [showDropDown]);
+  //   return () => {
+  //     document.removeEventListener('click', checkIfClickedOutside, true);
+  //   };
+  // }, [showDropDown]);
+  const onBlur = (event: any) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setShowDropDown(false);
+    }
+  };
 
   const Contents = () => {
     switch (selectedContent) {
       case ContentTypes.DASHBOARD:
-        return <Dashboard clickRef={clickRef} />;
+        return <Dashboard />;
       case ContentTypes.CLASSLISTS:
-        return <ClassLists clickRef={clickRef} />;
+        return <ClassLists />;
+      case ContentTypes.ATTENDANCE:
+        return <AttendanceForm />;
       default:
         return null;
     }
@@ -64,17 +72,28 @@ function HomePage() {
       {showSideMenu ? (
         <aside className=" z-20 relative bg-sidebar hidden w-64 sm:block shadow-xl">
           <div className="p-6">
-            <a
-              href="index.html"
-              className="text-white text-3xl font-semibold uppercase hover:text-gray-300"
+            {/* user types */}
+            <p className="text-white text-3xl font-semibold uppercase">Admin</p>
+
+            <button
+              onClick={() => {
+                setSelectedContent(ContentTypes.ATTENDANCE);
+              }}
+              className={` ${
+                selectedContent === ContentTypes.ATTENDANCE
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white hover:shadow-xl hover:bg-gray-300'
+              }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
             >
-              Admin
-            </a>
-            <button className="w-full bg-white cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
               <i className="fas fa-plus mr-3"></i> Enter Attendance
             </button>
-
-            <button className="w-full bg-white cta-btn   py-4 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
+            <button
+              className={` ${
+                selectedContent === ContentTypes.REMINDER
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white hover:shadow-xl hover:bg-gray-300'
+              }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
+            >
               <i className="fas fa-table  ml-3 "></i> Send Email Reminder
             </button>
           </div>
@@ -121,9 +140,13 @@ function HomePage() {
             onClick={() => {
               setShowSideMenu(!showSideMenu);
             }}
-            className="realtive z-10 border-4 border-gray-400 hover:border-gray-300 focus:border-gray-300 focus:outline-none"
+            className="realtive z-10   hover:border-gray-300 focus:border-gray-300 focus:outline-none"
           >
-            {showSideMenu ? 'Close' : 'Open'} Menu
+            {!showSideMenu ? (
+              <i className="fa-solid fa-bars fa-2xl"></i>
+            ) : (
+              <i className="fa-solid fa-xmark fa-2xl"></i>
+            )}
           </button>
           <div className="w-1/2"></div>
           <div className="relative w-1/2 flex justify-end">
@@ -131,110 +154,91 @@ function HomePage() {
               onClick={() => {
                 setShowDropDown(!showDropDown);
               }}
+              onBlur={onBlur}
               className="realtive z-10 w-12 h-12 rounded-full overflow-hidden border-4 border-gray-400 hover:border-gray-300 focus:border-gray-300 focus:outline-none"
             >
-              <img src="https://source.unsplash.com/uJ8LNVCBjFQ/400x400" />
-            </button>
-            <button className="h-full w-full fixed inset-0 cursor-default"></button>
-            {showDropDown && (
-              <div className="absolute bg-white rounded-lg shadow-lg py-2 mt-16">
-                <>
-                  <button className="block px-6 py-2 account-link hover:text-white">
-                    Account
-                  </button>
+              <i className="fa-solid fa-user fa-xl"></i>
 
-                  <button
-                    className="block px-6 py-2 account-link hover:text-white"
-                    onClick={Signout}
-                  >
-                    Sign Out
-                  </button>
-                </>
-              </div>
-            )}
+              {showDropDown && (
+                <div className="absolute bg-white rounded-lg shadow-lg py-2 mt-6 right-0">
+                  <>
+                    <button className="block px-6 py-2 account-link hover:text-white">
+                      Account
+                    </button>
+
+                    <button
+                      className="block px-6 py-2 account-link hover:text-white"
+                      onClick={Signout}
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                </div>
+              )}
+            </button>
           </div>
         </header>
-
         <header className="w-full bg-sidebar py-5 px-6 sm:hidden">
           <div className="flex items-center justify-between">
-            <a
-              href="index.html"
-              className="text-white text-3xl font-semibold uppercase hover:text-gray-300"
-            >
-              Admin
-            </a>
+            {/* user types */}
+            <p className="text-white text-3xl font-semibold uppercase">Admin</p>
             <button
               className="text-white   focus:outline-none"
               onClick={() => setShowSideMenu(!showSideMenu)}
             >
-              {!showSideMenu ? 'Show' : 'Close'} menu
+              {!showSideMenu ? (
+                <i className="fa-solid fa-bars fa-lg"></i>
+              ) : null}
             </button>
           </div>
-          {/* className="isOpen ? 'flex': 'hidden'" */}
+
           {showSideMenu && (
             <nav className="flex flex-col pt-4">
-              <div className="flex items-center active-nav-link text-white py-2 pl-4 nav-item">
+              <button
+                onClick={() => {
+                  setSelectedContent(ContentTypes.DASHBOARD);
+                }}
+                className={`w-full flex items-center text-white py-2 pl-6   ${
+                  selectedContent === ContentTypes.DASHBOARD
+                    ? 'bg-black'
+                    : 'nav-item'
+                }`}
+              >
                 <i className="fas fa-tachometer-alt mr-3"></i>
                 Dashboard
-              </div>
-              <a
-                href="blank.html"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
+              </button>
+              <button
+                onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}
+                className={`w-full flex items-center text-white py-2 pl-6   ${
+                  selectedContent === ContentTypes.CLASSLISTS
+                    ? 'bg-black'
+                    : 'nav-item'
+                }`}
               >
                 <i className="fas fa-sticky-note mr-3"></i>
-                Blank Page
-              </a>
-              <a
-                href="tables.html"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-table mr-3"></i>
-                Tables
-              </a>
-              <a
-                href="forms.html"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-align-left mr-3"></i>
-                Forms
-              </a>
-              <a
-                href="tabs.html"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-tablet-alt mr-3"></i>
-                Tabbed Content
-              </a>
-              <a
-                href="calendar.html"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-calendar mr-3"></i>
-                Calendar
-              </a>
-              <a
-                href="#"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-cogs mr-3"></i>
-                Support
-              </a>
-              <a
-                href="#"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-user mr-3"></i>
-                My Account
-              </a>
-              <a
-                href="#"
-                className="flex items-center text-white opacity-75 hover:opacity-100 py-2 pl-4 nav-item"
-              >
-                <i className="fas fa-sign-out-alt mr-3"></i>
-                Sign Out
-              </a>
+                Class Lists
+              </button>
               <button
-                onClick={() => setShowDropDown(!showDropDown)}
+                onClick={() => setSelectedContent(ContentTypes.ACCOUNT)}
+                className={`w-full flex items-center text-white py-2 pl-6   ${
+                  selectedContent === ContentTypes.ACCOUNT
+                    ? 'bg-black'
+                    : 'nav-item'
+                }`}
+              >
+                <i className="fas fa-sticky-note mr-3"></i>
+                My Account
+              </button>
+              <button
+                onClick={Signout}
+                className={`w-full flex items-center text-white py-2 pl-6 nav-item`}
+              >
+                <i className="fas fa-sticky-note mr-3"></i>
+                Sign Out
+              </button>
+
+              <button
+                onClick={() => setShowSideMenu(false)}
                 className="w-full bg-white cta-btn font-semibold py-2 mt-3 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center"
               >
                 <i className="fas fa-arrow-circle-up mr-3"></i> Close Menu
@@ -243,6 +247,7 @@ function HomePage() {
           )}
         </header>
         <Contents />
+        {/* {Contents()} */}
       </div>
     </div>
   );

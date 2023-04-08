@@ -2,16 +2,13 @@ import { students } from '@/MOCK';
 import { studentListTableLabels } from '@/utils/commonUtils';
 import React, { forwardRef } from 'react';
 
-const ClassLists = forwardRef(function classLists({
-  clickRef
-}: {
-  clickRef: any;
-}) {
+const ClassLists = () => {
   const GetClasses = () => {
     return (
-      <div className="w-full mt-12">
+      <div className="w-full mt-12 ">
         <p className="text-xl pb-3 flex items-center">
-          <i className="fas fa-list mr-3"></i> Class 1
+          <i className="fa-solid fa-graduation-cap mr-3"></i>
+          Class 1
         </p>
         <div className="bg-white overflow-auto">
           <table className="min-w-full bg-white">
@@ -73,10 +70,10 @@ const ClassLists = forwardRef(function classLists({
     );
   };
   return (
-    <div ref={clickRef} className="ml-4">
+    <div className="ml-4">
       <GetClasses />
     </div>
   );
-});
+};
 
 export default ClassLists;

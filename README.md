@@ -2,7 +2,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+First, create a .env.local file with MONGO_APP_ID value.
+Then, run the development server:
 
 ```bash
 npm run dev

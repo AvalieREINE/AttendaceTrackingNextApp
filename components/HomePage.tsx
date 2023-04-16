@@ -4,6 +4,7 @@ import React, { createRef, useEffect, useRef, useState } from 'react';
 import Dashboard from './Dashboard';
 import ClassLists from './ClassLists';
 import AttendanceForm from './AttendanceForm';
+import { destroyCookie } from 'nookies';
 
 enum ContentTypes {
   DASHBOARD,
@@ -52,7 +53,7 @@ function HomePage() {
     }
   };
   const Signout = () => {
-    // todo: add logic to remove token
+    destroyCookie(null, 'token');
     router.push('/signin');
   };
   return (

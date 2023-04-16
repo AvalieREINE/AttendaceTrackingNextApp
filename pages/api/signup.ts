@@ -1,46 +1,78 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Realm, { Credentials } from 'realm';
-import { parseCookies, setCookie, destroyCookie } from 'nookies';
 const app = new Realm.App({ id: process.env.MONGO_APP_ID ?? '' });
 
 const realmSignup = async (email: string, password: string) => {
-  // try {
   await app.emailPasswordAuth.registerUser({ email, password });
   const credentials = Credentials.emailPassword(email, password);
   const result = await app.logIn(credentials);
   if (result) {
     return result;
   }
-  // } catch (error: any) {
-  //   console.log(error.code, 'error registering user');
-  //   throw Error(error.code);
-  // }
 };
 
-const insertUserData = (
+const removeUser = async () => {
+  if (app.currentUser) {
+    await app.deleteUser(app?.currentUser);
+  }
+};
+
+const insertUserData = async (
   email: string,
   firstName: string,
   lastName: string,
-  role: string
-) => {};
+  role: string,
+  authId: string
+) => {
+  let result = null;
+  try {
+    const db = app.currentUser
+      ?.mongoClient('mongodb-atlas')
+      ?.db('attendancetracking')
+      ?.collection('users');
+    result = await db?.insertOne({
+      email,
+      firstName,
+      lastName,
+      role,
+      auth_id: authId
+    });
+    return result;
+  } catch (error) {
+    removeUser();
+    return result;
+  }
+};
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    const { email, password } = JSON.parse(req.body);
+    const { email, password, firstName, lastName, role, remember } = JSON.parse(
+      req.body
+    );
     const result = await realmSignup(email, password);
-    if (result !== null && result?.accessToken) {
-      console.log(result?.accessToken, 'register result');
-      res.status(200).json({ result: result?.accessToken });
+    const insertResult = await insertUserData(
+      email,
+      firstName,
+      lastName,
+      role,
+      result?.id as string
+    );
+    if (insertResult !== null && result?.accessToken) {
+      if (remember) {
+        res.status(200).json({ result: result?.refreshToken });
+      } else {
+        res.status(200).json({ result: result?.accessToken });
+      }
     } else {
+      removeUser();
       res.status(400).json({ result: 'Something went wrong' });
     }
-    // res.status(201).json({ result: user });
   } catch (err: any) {
     console.error('Failed to log in', err);
-
+    removeUser();
     res.status(400).json({ result: err.code });
   }
 }

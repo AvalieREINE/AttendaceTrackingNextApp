@@ -29,6 +29,7 @@ function signUpPage() {
     show: false,
     message: ''
   });
+  const [remember, setRemember] = useState(false);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -39,7 +40,8 @@ function signUpPage() {
       password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      role: showAdminInput ? 'admin' : 'teacher'
+      role: showAdminInput ? 'admin' : 'teacher',
+      remember
     };
 
     const response = await fetch('/api/signup', {
@@ -268,6 +270,9 @@ function signUpPage() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
+                onChange={(e) => {
+                  setRemember(e.target.checked);
+                }}
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
               />
               <label

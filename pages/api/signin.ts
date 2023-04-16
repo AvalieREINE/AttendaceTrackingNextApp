@@ -8,11 +8,15 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { email, password } = JSON.parse(req.body);
+    const { email, password, remember } = JSON.parse(req.body);
     const credentials = Credentials.emailPassword(email, password);
     const user = await app.logIn(credentials);
     if (user) {
-      res.status(200).json({ result: 'success' });
+      if (remember) {
+        res.status(200).json({ result: user?.refreshToken });
+      } else {
+        res.status(200).json({ result: user?.accessToken });
+      }
     } else {
       res.status(400).json({ result: 'something went wrong' });
     }

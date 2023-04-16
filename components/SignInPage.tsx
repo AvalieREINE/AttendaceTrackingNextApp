@@ -5,6 +5,7 @@ import {
   initialValidityState
 } from '@/utils/FormValidation';
 import { useRouter } from 'next/router';
+import { setCookie } from 'nookies';
 import React, { useReducer, useState } from 'react';
 
 function SignInPage() {
@@ -14,7 +15,6 @@ function SignInPage() {
     password: ''
   };
   const [showPassword, setShowPassword] = useState(false);
-  const [showAdminInput, setShowAdminInput] = useState(false);
   const [formData, setFormData] = useReducer(formReducer, initialState);
   const [formValidityData, setFormValidityData] = useReducer(
     formValidityReducer,
@@ -24,12 +24,14 @@ function SignInPage() {
     show: false,
     message: ''
   });
+  const [remember, setRemember] = useState(false);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const data = {
       email: formData.email,
-      password: formData.password
+      password: formData.password,
+      remember
     };
 
     const response = await fetch('/api/signin', {
@@ -37,9 +39,11 @@ function SignInPage() {
       body: JSON.stringify(data)
     });
     const result = await response.json();
+
     if (response.status !== 200) {
       setShowSubmitError({ show: true, message: result.result });
     } else {
+      setCookie(null, 'token', result.result);
       router.push('/');
     }
 
@@ -134,6 +138,9 @@ function SignInPage() {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
+                onChange={(e) => {
+                  setRemember(e.target.checked);
+                }}
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
               />
               <label

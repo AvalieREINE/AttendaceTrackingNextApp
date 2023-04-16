@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Realm, { Credentials } from 'realm';
-
+import { parseCookies, setCookie, destroyCookie } from 'nookies';
 const app = new Realm.App({ id: process.env.MONGO_APP_ID ?? '' });
 
 const realmSignup = async (email: string, password: string) => {
@@ -31,9 +31,9 @@ export default async function handler(
   try {
     const { email, password } = JSON.parse(req.body);
     const result = await realmSignup(email, password);
-    if (result !== null) {
-      console.log(result, 'register result');
-      res.status(200).json({ result: 'success' });
+    if (result !== null && result?.accessToken) {
+      console.log(result?.accessToken, 'register result');
+      res.status(200).json({ result: result?.accessToken });
     } else {
       res.status(400).json({ result: 'Something went wrong' });
     }

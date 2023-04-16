@@ -5,6 +5,7 @@ import {
   initialValidityState
 } from '@/utils/FormValidation';
 import { useRouter } from 'next/router';
+import { setCookie } from 'nookies';
 import React, { useReducer, useState } from 'react';
 
 function signUpPage() {
@@ -53,6 +54,7 @@ function signUpPage() {
     if (response.status !== 200) {
       setShowSubmitError({ show: true, message: result.result });
     } else {
+      setCookie(null, 'token', result.result);
       router.push('/');
     }
   };
@@ -73,12 +75,6 @@ function signUpPage() {
     } else {
       setAdminValid(false);
     }
-
-    // result().then((data) => {
-    //   console.log(data, 'data');
-
-    //   alert(data);
-    // });
   };
   return (
     <div className="flex min-h-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
@@ -110,18 +106,16 @@ function signUpPage() {
                 name="first_name"
                 type="text"
                 value={formData.firstName}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     type: 'UPDATE_FIRST_NAME',
                     payLoad: e.target.value
-                  })
-                }
-                onBlur={(e) =>
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_FIRST_NAME',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
                 required
                 className={`${
                   formValidityData.firstNameError && 'bg-red-300'
@@ -136,18 +130,16 @@ function signUpPage() {
               <input
                 id="last_name"
                 value={formData.lastName}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     type: 'UPDATE_LAST_NAME',
                     payLoad: e.target.value
-                  })
-                }
-                onBlur={(e) =>
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_LAST_NAME',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
                 name="last_name"
                 type="text"
                 autoComplete="last_name"
@@ -164,16 +156,17 @@ function signUpPage() {
               </label>
               <input
                 id="email"
-                onChange={(e) =>
-                  setFormData({ type: 'UPDATE_EMAIL', payLoad: e.target.value })
-                }
-                value={formData.email}
-                onBlur={(e) =>
+                onChange={(e) => {
+                  setFormData({
+                    type: 'UPDATE_EMAIL',
+                    payLoad: e.target.value
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_EMAIL',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
+                value={formData.email}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -193,18 +186,16 @@ function signUpPage() {
                 value={formData.password}
                 name="password"
                 type={`${showPassword ? 'text' : 'password'}`}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     type: 'UPDATE_PASSWORD',
                     payLoad: e.target.value
-                  })
-                }
-                onBlur={(e) =>
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_PASSWORD',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
                 required
                 className={`${
                   formValidityData.passwordError && 'bg-red-300'
@@ -232,7 +223,7 @@ function signUpPage() {
                 htmlFor="admin"
                 className="ml-2 block text-sm text-gray-900 my-3 "
               >
-                Regstering as admin ?
+                Registering as admin ?
               </label>
             </div>
             <div className={`${showAdminInput ? 'flex flex-row' : 'hidden '}`}>
@@ -244,13 +235,13 @@ function signUpPage() {
                 value={formData.adminCode}
                 name="admin_code"
                 type={`${showPassword ? 'text' : 'password'}`}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     type: 'UPDATE_ADMIN',
                     payLoad: e.target.value
-                  })
-                }
-                onBlur={(e) => checkAdminCode(e.target.value)}
+                  });
+                  checkAdminCode(e.target.value);
+                }}
                 className={`${
                   !adminValid && 'bg-red-300'
                 }  relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6`}

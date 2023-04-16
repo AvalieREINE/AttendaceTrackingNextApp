@@ -75,15 +75,16 @@ function SignInPage() {
               </label>
               <input
                 id="email"
-                onChange={(e) =>
-                  setFormData({ type: 'UPDATE_EMAIL', payLoad: e.target.value })
-                }
-                onBlur={(e) =>
+                onChange={(e) => {
+                  setFormData({
+                    type: 'UPDATE_EMAIL',
+                    payLoad: e.target.value
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_EMAIL',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -102,18 +103,16 @@ function SignInPage() {
                 id="password"
                 name="password"
                 type={`${showPassword ? 'text' : 'password'}`}
-                onChange={(e) =>
+                onChange={(e) => {
                   setFormData({
                     type: 'UPDATE_PASSWORD',
                     payLoad: e.target.value
-                  })
-                }
-                onBlur={(e) =>
+                  });
                   setFormValidityData({
                     type: 'VALIDATE_PASSWORD',
                     payLoad: formData
-                  })
-                }
+                  });
+                }}
                 required
                 className={`${
                   formValidityData.passwordError && 'bg-red-300'

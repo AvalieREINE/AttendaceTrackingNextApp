@@ -2,7 +2,15 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, create a .env.local file with MONGO_APP_ID value.
+First, create a .env.local file in the root directory with the following values:
+
+```bash
+MONGO_APP_ID
+NEXT_PUBLIC_EMAIL_SERVICE_ID
+NEXT_PUBLIC_EMAIL_TEMPLATE_ID
+NEXT_PUBLIC_EMAIL_PUBLIC_KEY
+```
+
 Then, run the development server:
 
 ```bash

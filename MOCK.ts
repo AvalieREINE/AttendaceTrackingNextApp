@@ -8,7 +8,7 @@ export const students = [
     program: 'Data Analysis',
     courses_enrolled: ['Data Analysis', 'Data Analysis', 'Data Analysis'],
     is_international_student: true,
-    email: 'jonsmith@mail.com'
+    email: 'whitecliffe.attendancetracking@gmail.com'
   },
   {
     _id: 1,

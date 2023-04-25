@@ -86,7 +86,7 @@ function SignInPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_EMAIL',
-                    payLoad: formData
+                    payLoad: { ...formData, email: e.target.value }
                   });
                 }}
                 name="email"
@@ -114,7 +114,7 @@ function SignInPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_PASSWORD',
-                    payLoad: formData
+                    payLoad: { ...formData, password: e.target.value }
                   });
                 }}
                 required

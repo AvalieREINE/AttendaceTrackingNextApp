@@ -115,7 +115,7 @@ function signUpPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_FIRST_NAME',
-                    payLoad: formData
+                    payLoad: { ...formData, firstName: e.target.value }
                   });
                 }}
                 required
@@ -139,7 +139,7 @@ function signUpPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_LAST_NAME',
-                    payLoad: formData
+                    payLoad: { ...formData, lastName: e.target.value }
                   });
                 }}
                 name="last_name"
@@ -165,7 +165,7 @@ function signUpPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_EMAIL',
-                    payLoad: formData
+                    payLoad: { ...formData, email: e.target.value }
                   });
                 }}
                 value={formData.email}
@@ -195,7 +195,7 @@ function signUpPage() {
                   });
                   setFormValidityData({
                     type: 'VALIDATE_PASSWORD',
-                    payLoad: formData
+                    payLoad: { ...formData, password: e.target.value }
                   });
                 }}
                 required

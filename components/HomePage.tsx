@@ -5,13 +5,17 @@ import Dashboard from './Dashboard';
 import ClassLists from './ClassLists';
 import AttendanceForm from './AttendanceForm';
 import { destroyCookie } from 'nookies';
+import ImportStudentData from './ImportStudentData';
+import AccountDetails from './AccountDetails';
 
 enum ContentTypes {
   DASHBOARD,
   CLASSLISTS,
   ACCOUNT,
   ATTENDANCE,
-  REMINDER
+  REMINDER,
+  IMPORTDATA,
+  ACCOUNT_DETAILS
 }
 function HomePage() {
   // check if logged in, show login or home page
@@ -48,6 +52,10 @@ function HomePage() {
         return <ClassLists />;
       case ContentTypes.ATTENDANCE:
         return <AttendanceForm />;
+      case ContentTypes.IMPORTDATA:
+        return <ImportStudentData />;
+      case ContentTypes.ACCOUNT_DETAILS:
+        return <AccountDetails />;
       default:
         return null;
     }
@@ -57,18 +65,6 @@ function HomePage() {
     router.push('/signin');
   };
   return (
-    // <div className="grid grid-cols-1 mt-28 place-items-center">
-    //   <div>
-    //     <h1 className="text-5xl">Whitecliffe Attendance Tracking System</h1>
-    //   </div>
-    //   <button className="bg-button-primary hover:bg-button-primary-hover text-black font-bold py-2 px-20 mt-20 rounded">
-    //     Login
-    //   </button>
-    //   <button className="bg-button-primary hover:bg-button-primary-hover text-black font-bold py-2 px-20 mt-10 rounded">
-    //     Register
-    //   </button>
-    // </div>
-
     <div className="bg-gray-100 font-family-karla flex min-h-screen ">
       {showSideMenu ? (
         <aside className=" z-20 relative bg-sidebar hidden w-64 sm:block shadow-xl">
@@ -86,16 +82,19 @@ function HomePage() {
                   : 'bg-white hover:shadow-xl hover:bg-gray-300'
               }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
             >
-              <i className="fas fa-plus mr-3"></i> Enter Attendance
+              <i className="fas fa-plus mr-3"></i> Mark Attendance
             </button>
             <button
+              onClick={() => {
+                setSelectedContent(ContentTypes.IMPORTDATA);
+              }}
               className={` ${
-                selectedContent === ContentTypes.REMINDER
+                selectedContent === ContentTypes.IMPORTDATA
                   ? 'bg-gray-800 text-white'
                   : 'bg-white hover:shadow-xl hover:bg-gray-300'
               }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
             >
-              <i className="fas fa-table  ml-3 "></i> Send Email Reminder
+              <i className="fas fa-table  ml-3 "></i> Import student data
             </button>
           </div>
           <div className="text-white  font-semibold pt-3">
@@ -163,7 +162,12 @@ function HomePage() {
               {showDropDown && (
                 <div className="absolute bg-white rounded-lg shadow-lg py-2 mt-6 right-0">
                   <>
-                    <button className="block px-6 py-2 account-link hover:text-white">
+                    <button
+                      onClick={() => {
+                        setSelectedContent(ContentTypes.ACCOUNT_DETAILS);
+                      }}
+                      className="block px-6 py-2 account-link hover:text-white"
+                    >
                       Account
                     </button>
 
@@ -207,6 +211,17 @@ function HomePage() {
               >
                 <i className="fas fa-tachometer-alt mr-3"></i>
                 Dashboard
+              </button>
+              <button
+                onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}
+                className={`w-full flex items-center text-white py-2 pl-6   ${
+                  selectedContent === ContentTypes.CLASSLISTS
+                    ? 'bg-black'
+                    : 'nav-item'
+                }`}
+              >
+                <i className="fas fa-sticky-note mr-3"></i>
+                Import student data
               </button>
               <button
                 onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}

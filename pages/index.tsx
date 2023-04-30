@@ -6,7 +6,6 @@ import HomePage from '@/components/HomePage';
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
-  //todo: add logic in useeffect to check if user is logged in, if not redirect to login page
   return (
     <>
       <Head>

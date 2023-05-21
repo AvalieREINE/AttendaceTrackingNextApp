@@ -13,9 +13,21 @@ export default async function handler(
     const user = await app.logIn(credentials);
     if (user) {
       if (remember) {
-        res.status(200).json({ result: user?.refreshToken });
+        res.status(200).json({
+          result: user?.refreshToken,
+          role:
+            user.customData.role === 'admin'
+              ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING
+              : process.env.NEXT_PUBLIC_TEACHER_ROLE_STRING
+        });
       } else {
-        res.status(200).json({ result: user?.accessToken });
+        res.status(200).json({
+          result: user?.accessToken,
+          role:
+            user.customData.role === 'admin'
+              ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING
+              : process.env.NEXT_PUBLIC_TEACHER_ROLE_STRING
+        });
       }
     } else {
       res.status(400).json({ result: 'something went wrong' });

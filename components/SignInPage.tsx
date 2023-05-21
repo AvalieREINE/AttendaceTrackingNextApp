@@ -44,7 +44,12 @@ function SignInPage() {
       setShowSubmitError({ show: true, message: result.result });
     } else {
       setCookie(null, 'token', result.result);
-      router.push('/');
+      setCookie(null, 'role', result.role);
+      if (result.role === process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     }
 
     setFormData({

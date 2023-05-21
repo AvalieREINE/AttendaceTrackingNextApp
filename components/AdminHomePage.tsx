@@ -3,41 +3,29 @@ import { useRouter } from 'next/router';
 import React, { createRef, useEffect, useRef, useState } from 'react';
 import Dashboard from './Dashboard';
 import ClassLists from './ClassLists';
-import AttendanceForm from './AttendanceForm';
+import AddProgramForm from './AddProgramForm';
 import { destroyCookie } from 'nookies';
 import ImportStudentData from './ImportStudentData';
 import AccountDetails from './AccountDetails';
+import AddStudentForm from './AddStudentData';
 
 enum ContentTypes {
   DASHBOARD,
   CLASSLISTS,
   ACCOUNT,
-  ATTENDANCE,
+  ADD_PROGRAM,
+  ADD_STUDENT,
   REMINDER,
   IMPORTDATA,
   ACCOUNT_DETAILS
 }
-function HomePage() {
+function AdminHomePage() {
   // check if logged in, show login or home page
   const [showDropDown, setShowDropDown] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(true);
   const [selectedContent, setSelectedContent] = useState<number>(0);
   const router = useRouter();
-  const ref: any = useRef(null);
-  // useEffect(() => {
-  //   const checkIfClickedOutside = (e: any) => {
-  //     if (!ref.current.contains(e.target)) {
-  //       setShowDropDown(false);
-  //     }
-  //   };
-  //   console.log(ref, 'clickRef home page');
 
-  //   document.addEventListener('click', checkIfClickedOutside, true);
-
-  //   return () => {
-  //     document.removeEventListener('click', checkIfClickedOutside, true);
-  //   };
-  // }, [showDropDown]);
   const onBlur = (event: any) => {
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setShowDropDown(false);
@@ -50,8 +38,10 @@ function HomePage() {
         return <Dashboard />;
       case ContentTypes.CLASSLISTS:
         return <ClassLists />;
-      case ContentTypes.ATTENDANCE:
-        return <AttendanceForm />;
+      case ContentTypes.ADD_PROGRAM:
+        return <AddProgramForm />;
+      case ContentTypes.ADD_STUDENT:
+        return <AddStudentForm />;
       case ContentTypes.IMPORTDATA:
         return <ImportStudentData />;
       case ContentTypes.ACCOUNT_DETAILS:
@@ -71,21 +61,31 @@ function HomePage() {
         <aside className=" z-20 relative bg-sidebar hidden w-64 sm:block shadow-xl">
           <div className="p-6">
             {/* user types */}
-            <p className="text-white text-3xl font-semibold uppercase">
-              Teacher
-            </p>
+            <p className="text-white text-3xl font-semibold uppercase">Admin</p>
 
             <button
               onClick={() => {
-                setSelectedContent(ContentTypes.ATTENDANCE);
+                setSelectedContent(ContentTypes.ADD_PROGRAM);
               }}
               className={` ${
-                selectedContent === ContentTypes.ATTENDANCE
+                selectedContent === ContentTypes.ADD_PROGRAM
                   ? 'bg-gray-800 text-white'
                   : 'bg-white hover:shadow-xl hover:bg-gray-300'
               }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
             >
-              <i className="fas fa-plus mr-3"></i> Mark Attendance
+              <i className="fas fa-plus mr-3"></i> Add Programs
+            </button>
+            <button
+              onClick={() => {
+                setSelectedContent(ContentTypes.ADD_STUDENT);
+              }}
+              className={` ${
+                selectedContent === ContentTypes.ADD_STUDENT
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white hover:shadow-xl hover:bg-gray-300'
+              }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
+            >
+              <i className="fas fa-plus mr-3"></i> Add Students
             </button>
             <button
               onClick={() => {
@@ -272,4 +272,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default AdminHomePage;

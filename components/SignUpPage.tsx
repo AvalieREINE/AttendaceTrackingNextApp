@@ -57,21 +57,29 @@ function signUpPage() {
       setShowSubmitError({ show: true, message: result.result });
     } else {
       setCookie(null, 'token', result.result);
-      router.push('/');
+      setCookie(null, 'role', result.role);
+      if (result.role === process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     }
   };
 
   const checkAdminCode = async (code: string) => {
-    const data = {
-      code
-    };
+    const response = await fetch(
+      'https://ap-southeast-2.aws.data.mongodb-api.com/app/application-0-wqyin/endpoint/getCode',
+      {
+        method: 'POST',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({
+          code
+        })
+      }
+    );
 
-    const response = await fetch('/api/validateCode', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    // return response.json();
     const result = await response.json();
+
     if (result.result) {
       setAdminValid(true);
     } else {

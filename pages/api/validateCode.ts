@@ -8,11 +8,24 @@ export default async function handler(
 ) {
   try {
     const { code } = JSON.parse(req.body);
-    const result = await app.currentUser?.callFunction('get_admin_code', {
-      code: code
-    });
 
-    res.json({ result });
+    const res = await fetch(
+      'https://ap-southeast-2.aws.data.mongodb-api.com/app/application-0-wqyin/endpoint/getCode',
+      {
+        method: 'POST',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({
+          code: code
+        })
+      }
+    );
+    // const result = await app.currentUser?.callFunction('get_admin_code', {
+    //   code: code
+    // });
+
+    // const result = await res.json();
+    await res.json();
+    // console.log(result, 'result');
   } catch (err) {
     console.error('Failed to log in', err);
 

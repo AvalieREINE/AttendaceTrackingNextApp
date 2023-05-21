@@ -62,9 +62,21 @@ export default async function handler(
     );
     if (insertResult !== null && result?.accessToken) {
       if (remember) {
-        res.status(200).json({ result: result?.refreshToken });
+        res.status(200).json({
+          result: result?.refreshToken,
+          role:
+            role === 'admin'
+              ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING
+              : process.env.NEXT_PUBLIC_TEACHER_ROLE_STRING
+        });
       } else {
-        res.status(200).json({ result: result?.accessToken });
+        res.status(200).json({
+          result: result?.accessToken,
+          role:
+            role === 'admin'
+              ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING
+              : process.env.NEXT_PUBLIC_TEACHER_ROLE_STRING
+        });
       }
     } else {
       removeUser();

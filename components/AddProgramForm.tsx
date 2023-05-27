@@ -15,6 +15,9 @@ type FormData = {
   quarters: string[];
   numberOfOfferings: number;
   teachersData: any[];
+  studentsData: any[];
+  selectedStudents: any[];
+  selectedTeachers: any[];
 };
 
 function AddProgramForm() {
@@ -74,7 +77,10 @@ function AddProgramForm() {
       years: [],
       quarters: [],
       numberOfOfferings: 1,
-      teachersData: []
+      teachersData: [],
+      studentsData: [],
+      selectedStudents: [],
+      selectedTeachers: []
     }
   );
   const [loading, setloading] = useState(true);
@@ -89,11 +95,28 @@ function AddProgramForm() {
         teachersData: [
           {
             _id: 0,
-            firstName:
+            first_name:
               'I will add this data later - select this if you want to leave it empty',
-            lastName: ''
+            last_name: ''
           },
           ...result.result
+        ]
+      });
+    }
+    const studentRes = await fetch('/api/getStudents', {
+      method: 'GET'
+    });
+    const studentResult = await studentRes.json();
+    if (studentResult.result) {
+      updateData({
+        studentsData: [
+          {
+            _id: 0,
+            first_name:
+              'I will add this data later - select this if you want to leave it empty',
+            last_name: ''
+          },
+          ...studentResult.result
         ]
       });
     }
@@ -244,7 +267,7 @@ function AddProgramForm() {
               {data.teachersData.map((t, i) => {
                 return (
                   <div className="mr-2" key={i}>
-                    {t.firstName}
+                    {t.first_name}
                   </div>
                 );
               })}
@@ -257,7 +280,7 @@ function AddProgramForm() {
                 return (
                   <>
                     <option value={teacher._id} key={idx}>
-                      {`${teacher.firstName} ${teacher.lastName}`}
+                      {`${teacher.first_name} ${teacher.last_name}`}
                     </option>
                   </>
                 );
@@ -272,10 +295,10 @@ function AddProgramForm() {
               Selected Students
             </label>
             <div className="flex flex-row">
-              {data.teachersData.map((t, i) => {
+              {data.studentsData.map((t, i) => {
                 return (
                   <div className="mr-2" key={i}>
-                    {t.firstName}
+                    {t.first_name}
                   </div>
                 );
               })}
@@ -284,12 +307,12 @@ function AddProgramForm() {
               id="countries"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  "
             >
-              {data.teachersData?.map((teacher: any, idx: number) => {
+              {data.studentsData?.map((student: any, idx: number) => {
                 return (
                   <>
                     {
-                      <option value={teacher._id} key={idx}>
-                        {`${teacher.firstName} ${teacher.lastName}`}
+                      <option value={student.student_id} key={idx}>
+                        {`${student.first_name} ${student.last_name}`}
                       </option>
                     }
                   </>

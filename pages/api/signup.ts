@@ -32,8 +32,8 @@ const insertUserData = async (
       ?.collection('users');
     result = await db?.insertOne({
       email,
-      firstName,
-      lastName,
+      first_name: firstName,
+      last_name: lastName,
       role,
       auth_id: authId
     });

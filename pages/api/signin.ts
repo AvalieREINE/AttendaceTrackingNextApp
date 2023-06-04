@@ -15,6 +15,7 @@ export default async function handler(
       if (remember) {
         res.status(200).json({
           result: user?.refreshToken,
+          id: user?.customData?._id,
           role:
             user.customData.role === 'admin'
               ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING
@@ -23,6 +24,7 @@ export default async function handler(
       } else {
         res.status(200).json({
           result: user?.accessToken,
+          id: user?.customData?._id,
           role:
             user.customData.role === 'admin'
               ? process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING

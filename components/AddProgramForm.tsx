@@ -1,14 +1,30 @@
 import {
+  ProgramForTeacher,
+  ProgramOffering,
+  Programs
+} from '@/models/Programs';
+import { Students } from '@/models/students';
+import { Users } from '@/models/users';
+import {
   FormState,
   formReducer,
   formValidityReducer,
   initialValidityState
 } from '@/utils/FormValidation';
 import { useRouter } from 'next/router';
-import { setCookie } from 'nookies';
 import React, { useReducer, useState } from 'react';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
+
+type Offering = {
+  quarter: string;
+  year: number | string;
+  selectedTeachers?: Users[];
+  selectedStudents?: {
+    teacherId: string;
+    studentList?: Students[];
+  }[];
+};
 
 type FormData = {
   years: number[];
@@ -16,14 +32,15 @@ type FormData = {
   numberOfOfferings: number;
   programId: string;
   programName: string;
-  teachersData: any[];
-  studentsData: any[];
+  teachersData: Users[];
+  studentsData: Students[];
   selectedStudents: any[];
   selectedTeachers: any[];
-  selectedOfferings: any[];
-  programData: any[];
-  filteredProgramData: any[];
-  selectedProgram: any;
+  selectedOfferings: Offering[];
+  fillEditData: boolean;
+  programData: Programs[];
+  filteredProgramData: Programs[];
+  selectedProgram?: Programs;
   showDeleteModal: boolean;
 };
 
@@ -43,26 +60,26 @@ function AddProgramForm() {
     show: false,
     message: ''
   });
-
+  const currentYear = new Date().getFullYear();
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const offeringData: any[] = [];
+    const offeringData: ProgramOffering[] = [];
     data.selectedOfferings.map((offer) => {
-      const teachersData: any[] = [];
-      offer.selectedTeachers?.map((teach: any) => {
-        const studentData: any[] = [];
-        teach.selectedStudents?.map((student: any) => {
-          studentData.push(student._id);
-        });
+      const teachersData: { teacher_id: string; students?: Students[] }[] = [];
+      offer.selectedTeachers?.map((teach: Users) => {
+        const currentStudentData = offer.selectedStudents?.filter(
+          (st) => st.teacherId === teach._id
+        )[0];
+
         teachersData.push({
           teacher_id: teach._id,
-          students: studentData
+          students: currentStudentData?.studentList
         });
       });
 
       offeringData.push({
         quarter: offer.quarter,
-        year: offer.year,
+        year: Number(offer.year),
         teachers: teachersData
       });
     });
@@ -84,6 +101,18 @@ function AddProgramForm() {
     } else {
       window.alert('success');
     }
+
+    updateData({
+      numberOfOfferings: 1,
+      selectedProgram: undefined,
+      programId: '',
+      programName: '',
+      selectedStudents: [],
+      selectedTeachers: [],
+      selectedOfferings: [{ quarter: 'Q1', year: currentYear - 1 }],
+      showDeleteModal: false
+    });
+    setloading(true);
   };
   const [data, updateData] = useReducer(
     (prev: FormData, next: Partial<FormData>) => {
@@ -103,7 +132,8 @@ function AddProgramForm() {
       selectedProgram: undefined,
       programId: '',
       programName: '',
-      showDeleteModal: false
+      showDeleteModal: false,
+      fillEditData: false
     }
   );
   const [loading, setloading] = useState(true);
@@ -163,12 +193,42 @@ function AddProgramForm() {
       selectedOfferings: [{ quarter: 'Q1', year: currentYear - 1 }]
     });
   }, []);
+
+  const deleteProgram = async () => {
+    updateData({ showDeleteModal: false });
+    if (data.selectedProgram) {
+      const response = await fetch('/api/deleteProgram', {
+        method: 'POST',
+        body: JSON.stringify({
+          programId: data.selectedProgram._id
+        })
+      });
+      const result = await response.json();
+
+      if (response.status !== 200) {
+        window.alert(result.result);
+      } else {
+        window.alert('success');
+
+        updateData({
+          fillEditData: false,
+          numberOfOfferings: 1,
+          selectedOfferings: [{ quarter: 'Q1', year: currentYear - 1 }],
+          programId: '',
+          programName: ''
+        });
+        setloading(true);
+      }
+    } else {
+      window.alert('no student selected');
+    }
+  };
   useEffect(() => {
     if (loading) {
       getInitialData();
       setloading(false);
     }
-  }, []);
+  }, [loading]);
   if (loading) {
     return (
       <div role="status" className="flex justify-center  mt-20">
@@ -198,7 +258,7 @@ function AddProgramForm() {
         <div className="w-full max-w-md space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Add Program
+              {data.fillEditData ? 'Edit Program' : 'Add Program'}
             </h2>
           </div>
 
@@ -212,6 +272,7 @@ function AddProgramForm() {
                   Program Id
                 </label>
                 <input
+                  value={data.programId}
                   onChange={(e) => {
                     updateData({ programId: e.target.value });
                   }}
@@ -227,80 +288,80 @@ function AddProgramForm() {
                 >
                   Offerings
                 </label>
-                {Array(data.numberOfOfferings)
-                  .fill(0)
-                  .map((_, idx) => {
-                    return (
-                      <div className="flex flex-row" key={idx}>
-                        <select
-                          onChange={(e) => {
+                {data.selectedOfferings.map((quarterAndYear, idx) => {
+                  return (
+                    <div className="flex flex-row" key={idx}>
+                      <select
+                        onChange={(e) => {
+                          const copy = [...data.selectedOfferings];
+                          copy[idx] = {
+                            quarter: e.target.value,
+                            year: copy[idx].year
+                          };
+                          updateData({ selectedOfferings: copy });
+                        }}
+                        value={quarterAndYear?.quarter}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  "
+                      >
+                        {data.quarters.map((quarter: string, i: number) => {
+                          return (
+                            <option value={quarter} key={i}>
+                              {quarter}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <select
+                        onChange={(e) => {
+                          const copy = [...data.selectedOfferings];
+                          copy[idx] = {
+                            quarter: copy[idx].quarter,
+                            year: e.target.value
+                          };
+                          updateData({ selectedOfferings: copy });
+                        }}
+                        value={quarterAndYear?.year}
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  "
+                      >
+                        {data.years.map((year: number, i: number) => {
+                          return (
+                            <option value={year} key={i}>
+                              {year}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      <button
+                        onClick={() => {
+                          if (idx === 0) {
+                            const prevData = data.selectedOfferings[0];
+                            updateData({
+                              numberOfOfferings: data.numberOfOfferings + 1,
+                              selectedOfferings: [
+                                ...data.selectedOfferings,
+                                {
+                                  quarter: prevData.quarter,
+                                  year: prevData.year
+                                }
+                              ]
+                            });
+                          } else {
                             const copy = [...data.selectedOfferings];
-                            copy[idx] = {
-                              quarter: e.target.value,
-                              year: copy[idx].year
-                            };
-                            updateData({ selectedOfferings: copy });
-                          }}
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  "
-                        >
-                          {data.quarters.map((quarter: string, i: number) => {
-                            return (
-                              <option value={quarter} key={i}>
-                                {quarter}
-                              </option>
-                            );
-                          })}
-                        </select>
-                        <select
-                          onChange={(e) => {
-                            const copy = [...data.selectedOfferings];
-                            copy[idx] = {
-                              quarter: copy[idx].quarter,
-                              year: e.target.value
-                            };
-                            updateData({ selectedOfferings: copy });
-                          }}
-                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  "
-                        >
-                          {data.years.map((year: number, i: number) => {
-                            return (
-                              <option value={year} key={i}>
-                                {year}
-                              </option>
-                            );
-                          })}
-                        </select>
-                        <button
-                          onClick={() => {
-                            if (idx === 0) {
-                              const prevData = data.selectedOfferings[0];
-                              updateData({
-                                numberOfOfferings: data.numberOfOfferings + 1,
-                                selectedOfferings: [
-                                  ...data.selectedOfferings,
-                                  {
-                                    quarter: prevData.quarter,
-                                    year: prevData.year
-                                  }
-                                ]
-                              });
-                            } else {
-                              const copy = [...data.selectedOfferings];
-                              copy.pop();
-                              updateData({
-                                numberOfOfferings: data.numberOfOfferings - 1,
-                                selectedOfferings: copy
-                              });
-                            }
-                          }}
-                          type="button"
-                          className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1 mt-2 mb-2 ml-2    "
-                        >
-                          {idx === 0 ? '+' : '- '}
-                        </button>
-                      </div>
-                    );
-                  })}
+                            copy.pop();
+                            updateData({
+                              numberOfOfferings: data.numberOfOfferings - 1,
+                              selectedOfferings: copy
+                            });
+                          }
+                        }}
+                        type="button"
+                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-2 py-1 mt-2 mb-2 ml-2    "
+                      >
+                        {idx === 0 ? '+' : '- '}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div className="mb-6">
@@ -314,6 +375,7 @@ function AddProgramForm() {
                 onChange={(e) => {
                   updateData({ programName: e.target.value });
                 }}
+                value={data.programName}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                 placeholder="i.g. Testing and Deployment of Web Application"
                 required
@@ -346,7 +408,7 @@ function AddProgramForm() {
                                 const copy = [...data.selectedOfferings];
                                 const newArr = copy[
                                   index
-                                ].selectedTeachers.filter(
+                                ]?.selectedTeachers?.filter(
                                   (s) => s._id !== t._id
                                 );
                                 copy[index].selectedTeachers = newArr;
@@ -373,9 +435,13 @@ function AddProgramForm() {
                             (t) => t._id === e.target.value
                           )[0];
                           const copy = [...data.selectedOfferings];
-
-                          if (copy[index].selectedTeachers?.length > 0) {
-                            copy[index].selectedTeachers.push(currentData);
+                          const selectedTeachers =
+                            copy[index]?.selectedTeachers;
+                          if (
+                            selectedTeachers &&
+                            selectedTeachers?.length > 0
+                          ) {
+                            copy[index].selectedTeachers?.push(currentData);
                           } else {
                             copy[index].selectedTeachers = [currentData];
                           }
@@ -398,6 +464,10 @@ function AddProgramForm() {
                     })}
                   </select>
                   {offerings.selectedTeachers?.map((t) => {
+                    const currentStudentList =
+                      offerings.selectedStudents?.filter(
+                        (s) => s.teacherId === t._id
+                      )[0];
                     return (
                       <div className="mb-6 mt-3">
                         <label
@@ -407,21 +477,37 @@ function AddProgramForm() {
                           Selected Students for {t.first_name} {t.last_name}
                         </label>
                         <div className="flex flex-row">
-                          {data.selectedStudents.map((t, i) => {
+                          {currentStudentList?.studentList?.map((stu, i) => {
                             return (
                               <>
                                 <div
                                   className="mr-2 bg-slate-300 rounded px-2 mb-2"
                                   key={i}
                                 >
-                                  {t?.first_name} {t?.last_name}
+                                  {stu?.first_name} {stu?.last_name}
                                   <button
                                     onClick={() => {
-                                      const newArr =
-                                        data.selectedStudents.filter(
-                                          (s) => s._id !== t._id
+                                      const copy = [...data.selectedOfferings];
+                                      const currentList = copy[
+                                        index
+                                      ].selectedStudents?.filter(
+                                        (se) => se.teacherId === t._id
+                                      )[0];
+                                      const currentStudentIdx =
+                                        currentList?.studentList?.findIndex(
+                                          (stud) => stud._id === stu._id
                                         );
-                                      updateData({ selectedStudents: newArr });
+
+                                      if (
+                                        currentStudentIdx !== undefined &&
+                                        currentStudentIdx > -1
+                                      ) {
+                                        currentList?.studentList?.splice(
+                                          currentStudentIdx,
+                                          1
+                                        );
+                                        updateData({ selectedOfferings: copy });
+                                      }
                                     }}
                                   >
                                     <i className="fa-solid fa-xmark ml-2 mt-2 mb-2"></i>
@@ -434,19 +520,47 @@ function AddProgramForm() {
                         <select
                           onChange={(e) => {
                             if (e.target.value !== '0') {
-                              const isAdded = data.selectedStudents.filter(
+                              const copy = [...data.selectedOfferings];
+                              const current = copy[
+                                index
+                              ].selectedStudents?.filter(
+                                (s) => s.teacherId === t._id
+                              )[0];
+                              const studentData = data.studentsData.filter(
                                 (s) => s._id === e.target.value
                               )[0];
-                              if (!isAdded) {
-                                const currentData = data.studentsData.filter(
-                                  (t) => t._id === e.target.value
-                                )[0];
-                                updateData({
-                                  selectedStudents: [
-                                    ...data.selectedStudents,
-                                    currentData
-                                  ]
-                                });
+                              if (current) {
+                                const studentAdded =
+                                  current.studentList?.filter(
+                                    (s) => s._id === e.target.value
+                                  )[0];
+
+                                if (!studentAdded) {
+                                  current.studentList?.push(studentData);
+                                  updateData({
+                                    selectedOfferings: copy
+                                  });
+                                }
+                              } else {
+                                if (copy[index].selectedStudents) {
+                                  copy[index].selectedStudents?.push({
+                                    teacherId: t._id,
+                                    studentList: [studentData]
+                                  });
+                                  updateData({
+                                    selectedOfferings: copy
+                                  });
+                                } else {
+                                  copy[index].selectedStudents = [
+                                    {
+                                      teacherId: t._id,
+                                      studentList: [studentData]
+                                    }
+                                  ];
+                                  updateData({
+                                    selectedOfferings: copy
+                                  });
+                                }
                               }
                             }
                           }}
@@ -558,18 +672,42 @@ function AddProgramForm() {
             <button
               type="button"
               onClick={() => {
-                // const selectedData = data.selectedStudentData;
-                // updateData({
-                //   fillEditData: true,
-                //   studentId: selectedData.student_id,
-                //   selectedCampus: selectedData.campus,
-                //   firstName: selectedData.first_name,
-                //   lastName: selectedData.last_name,
-                //   address: selectedData.address,
-                //   email: selectedData.email,
-                //   phoneNumber: selectedData.phone_number,
-                //   isInternational: selectedData.is_international_student
-                // });
+                if (data.selectedProgram) {
+                  const offeringData: Offering[] = [];
+                  const currentData = data.selectedProgram.program_offerings;
+
+                  currentData.map((cur) => {
+                    const teachersArr: Users[] = [];
+                    const studentsArr: {
+                      teacherId: string;
+                      studentList?: Students[];
+                    }[] = [];
+                    cur.teachers?.map((t) => {
+                      const currentTeacher = data.teachersData.filter(
+                        (te) => te._id === t.teacher_id
+                      )[0];
+                      teachersArr.push(currentTeacher);
+                      studentsArr.push({
+                        teacherId: t.teacher_id,
+                        studentList: t.students
+                      });
+                    });
+                    offeringData.push({
+                      quarter: cur.quarter,
+                      year: cur.year,
+                      selectedStudents: studentsArr,
+                      selectedTeachers: teachersArr
+                    });
+                  });
+
+                  updateData({
+                    fillEditData: true,
+                    numberOfOfferings: offeringData.length,
+                    selectedOfferings: offeringData,
+                    programId: data.selectedProgram.program_id,
+                    programName: data.selectedProgram.program_name
+                  });
+                }
               }}
               className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
             >
@@ -578,18 +716,14 @@ function AddProgramForm() {
             <button
               type="button"
               onClick={() => {
-                // updateData({
-                //   fillEditData: false,
-                //   studentId: undefined,
-                //   selectedCampus: undefined,
-                //   firstName: '',
-                //   lastName: '',
-                //   address: '',
-                //   email: '',
-                //   phoneNumber: undefined,
-                //   isInternational: false,
-                //   selectedStudentData: undefined
-                // });
+                updateData({
+                  fillEditData: false,
+                  numberOfOfferings: 1,
+                  selectedOfferings: [{ quarter: 'Q1', year: currentYear - 1 }],
+                  programId: '',
+                  programName: '',
+                  selectedProgram: undefined
+                });
               }}
               className="text-white bg-yellow-600 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
             >
@@ -654,7 +788,7 @@ function AddProgramForm() {
                       <button
                         data-modal-hide="popup-modal"
                         type="button"
-                        // onClick={deleteStudent}
+                        onClick={deleteProgram}
                         className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2"
                       >
                         Yes, I'm sure

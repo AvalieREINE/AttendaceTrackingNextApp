@@ -161,6 +161,7 @@ function AddStudentForm() {
         phoneNumber: undefined,
         isInternational: false
       });
+      setloading(true);
     }
   };
   const [data, updateData] = useReducer(

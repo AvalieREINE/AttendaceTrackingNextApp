@@ -45,6 +45,7 @@ function SignInPage() {
     } else {
       setCookie(null, 'token', result.result);
       setCookie(null, 'role', result.role);
+      setCookie(null, 'id', result.id);
       if (result.role === process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING) {
         router.push('/admin');
       } else {

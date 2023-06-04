@@ -11,8 +11,12 @@ NEXT_PUBLIC_EMAIL_TEMPLATE_ID
 NEXT_PUBLIC_EMAIL_PUBLIC_KEY
 NEXT_PUBLIC_ADMIN_ROLE_STRING
 NEXT_PUBLIC_TEACHER_ROLE_STRING
+```
 
+Install packages:
 
+```bash
+npm install
 ```
 
 Then, run the development server:

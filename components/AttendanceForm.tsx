@@ -77,7 +77,8 @@ function AttendanceForm() {
       updateData({
         selectedProgram: undefined,
         attendanceData: undefined,
-        confirmSelected: false
+        confirmSelected: false,
+        selectedSessionDate: null
       });
     } else {
       window.alert('Please mark attendance for all students');

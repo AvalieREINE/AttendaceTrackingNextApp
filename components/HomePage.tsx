@@ -7,6 +7,7 @@ import AttendanceForm from './AttendanceForm';
 import { destroyCookie } from 'nookies';
 import ImportStudentData from './ImportStudentData';
 import AccountDetails from './AccountDetails';
+import AddStudentForm from './AddStudentData';
 
 enum ContentTypes {
   DASHBOARD,
@@ -15,7 +16,8 @@ enum ContentTypes {
   ATTENDANCE,
   REMINDER,
   IMPORTDATA,
-  ACCOUNT_DETAILS
+  ACCOUNT_DETAILS,
+  ADD_STUDENT
 }
 function HomePage() {
   // check if logged in, show login or home page
@@ -56,6 +58,8 @@ function HomePage() {
         return <ImportStudentData />;
       case ContentTypes.ACCOUNT_DETAILS:
         return <AccountDetails />;
+      case ContentTypes.ADD_STUDENT:
+        return <AddStudentForm />;
       default:
         return null;
     }
@@ -74,7 +78,18 @@ function HomePage() {
             <p className="text-white text-3xl font-semibold uppercase">
               Teacher
             </p>
-
+            <button
+              onClick={() => {
+                setSelectedContent(ContentTypes.ADD_STUDENT);
+              }}
+              className={` ${
+                selectedContent === ContentTypes.ADD_STUDENT
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white hover:shadow-xl hover:bg-gray-300'
+              }w-full cta-btn font-semibold p-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg  flex items-center justify-center`}
+            >
+              <i className="fas fa-plus mr-3"></i> Add Students
+            </button>
             <button
               onClick={() => {
                 setSelectedContent(ContentTypes.ATTENDANCE);
@@ -87,6 +102,7 @@ function HomePage() {
             >
               <i className="fas fa-plus mr-3"></i> Mark Attendance
             </button>
+
             <button
               onClick={() => {
                 setSelectedContent(ContentTypes.IMPORTDATA);
@@ -123,16 +139,8 @@ function HomePage() {
               }`}
             >
               <i className="fas fa-sticky-note mr-3"></i>
-              Class Lists
+              Program Lists
             </button>
-
-            <a
-              href="/home"
-              className=" flex items-center  text-white py-4 pl-6 nav-item "
-            >
-              <i className="fas fa-sticky-note mr-3"></i>
-              Other
-            </a>
           </div>
         </aside>
       ) : null}

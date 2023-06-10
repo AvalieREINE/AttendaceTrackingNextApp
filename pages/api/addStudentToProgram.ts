@@ -13,27 +13,61 @@ export default async function handler(
   try {
     const mongo = app.currentUser?.mongoClient('mongodb-atlas');
     const collection = mongo?.db('attendancetracking').collection('programs');
-    const programResult = await collection?.findOne({
-      _id: new BSON.ObjectID(data.programId)
-    });
-    const copy = { ...programResult };
-    copy.program_offerings.map((c: ProgramOffering) => {
-      if (c.year === Number(data.year) && c.quarter === data.quarter) {
-        c.teachers.map((t: { teacher_id: string; students?: Students[] }) => {
-          if (t.teacher_id === data.teacherId) {
-            if (t.students) t.students?.push(data.studentData);
-            else {
-              t.students = [data.studentData];
-            }
-          }
-        });
-      }
-    });
+    // const programResult = await collection?.findOne({
+    //   _id: new BSON.ObjectID(data.programId)
+    // });
+    // const copy = { ...programResult };
+    // copy.program_offerings.map((c: ProgramOffering) => {
+    //   if (c.year === Number(data.year) && c.quarter === data.quarter) {
+    //     c.teachers.map((t: { teacher_id: string; students?: Students[] }) => {
+    //       if (t.teacher_id === data.teacherId) {
+    //         if (t.students) t.students?.push(data.studentData);
+    //         else {
+    //           t.students = [data.studentData];
+    //         }
+    //       }
+    //     });
+    //   }
+    // });
+    // const result = await collection?.updateOne(
+    //   {
+    //     _id: new BSON.ObjectID(data.programId)
+    //   },
+    //   copy
+    // );
     const result = await collection?.updateOne(
       {
         _id: new BSON.ObjectID(data.programId)
+        // 'program_offerings.year': Number(data.year),
+        // 'program_offerings.quarter': data.quarter
       },
-      copy
+      {
+        $addToSet: {
+          'program_offerings.$[offering].teachers.$[teacher].students':
+            data.studentData
+        }
+      },
+      {
+        arrayFilters: [
+          {
+            $and: [
+              {
+                'offering.year': {
+                  $eq: Number(data.year)
+                },
+                'offering.quarter': {
+                  $eq: data.quarter
+                }
+              }
+            ]
+          },
+          {
+            'teacher.teacher_id': {
+              $eq: data.teacherId
+            }
+          }
+        ]
+      }
     );
 
     if (result) {

@@ -9,5 +9,5 @@ export type Students = {
   address: string;
   phone_number: number;
   email: string;
-  is_international: boolean;
+  is_international_student: boolean;
 };

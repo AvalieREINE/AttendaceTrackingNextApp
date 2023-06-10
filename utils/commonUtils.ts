@@ -1,10 +1,9 @@
 export const studentListTableLabels = [
+  'Student ID',
   'Name',
   'Phone',
   ' Email',
-  'Program',
   'Campus',
-  'Courses Enrolled',
   'International Student',
   'Action'
 ];

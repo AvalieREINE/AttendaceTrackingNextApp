@@ -32,25 +32,17 @@ type FormData = {
   confirmSelected: boolean;
   selectedSessionDate: Date | null;
   attendanceData?: { student_id: string; present: boolean }[];
+  filteredStudentsData: any[];
+  selectedStudentData?: any;
+  showStudentList: boolean;
+  selectedStudent: any;
 };
 
 function AttendanceForm() {
-  const router = useRouter();
   const initialState: FormState = {
     email: '',
     password: ''
   };
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useReducer(formReducer, initialState);
-  const [formValidityData, setFormValidityData] = useReducer(
-    formValidityReducer,
-    initialValidityState
-  );
-  const [showSubmitError, setShowSubmitError] = useState({
-    show: false,
-    message: ''
-  });
-
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (
@@ -84,6 +76,8 @@ function AttendanceForm() {
       window.alert('Please mark attendance for all students');
     }
   };
+  const cookies = parseCookies();
+
   const [data, updateData] = useReducer(
     (prev: FormData, next: Partial<FormData>) => {
       return { ...prev, ...next };
@@ -93,7 +87,6 @@ function AttendanceForm() {
       quarters: [],
       numberOfOfferings: 1,
       teachersData: [],
-      studentsData: [],
       selectedStudents: [],
       selectedTeachers: [],
       selectedOfferings: [],
@@ -105,14 +98,46 @@ function AttendanceForm() {
       programName: '',
       showDeleteModal: false,
       selectedSessionDate: null,
-      attendanceData: undefined
+      attendanceData: undefined,
+      studentsData: [],
+      filteredStudentsData: [],
+      selectedStudentData: undefined,
+      showStudentList: false,
+      selectedStudent: undefined
     }
   );
   const [loading, setloading] = useState(true);
 
-  const getInitialData = useCallback(async () => {
-    const cookies = parseCookies();
+  const addStudentToProgram = async () => {
+    // student id, program id, teacher id , q, y
+    if (data.selectedStudent && data.selectedProgram) {
+      const reqData = {
+        studentData: data.selectedStudent,
+        programId: data.selectedProgram.id,
+        teacherId: cookies.id,
+        quarter: data.selectedProgram.offering.quarter,
+        year: data.selectedProgram.offering.year
+      };
 
+      const response = await fetch('/api/addStudentToProgram', {
+        method: 'POST',
+        body: JSON.stringify(reqData)
+      });
+      const result = await response.json();
+
+      if (response.status !== 200) {
+        window.alert(result.result);
+      } else {
+        window.alert('success');
+      }
+      updateData({
+        selectedStudent: undefined
+      });
+      setloading(true);
+    }
+  };
+
+  const getInitialData = useCallback(async () => {
     const proRes = await fetch('/api/getProgramsForTeacher', {
       method: 'POST',
       body: JSON.stringify({ teacherId: cookies.id })
@@ -143,6 +168,17 @@ function AttendanceForm() {
       updateData({
         programData: programArr,
         filteredProgramData: programArr
+      });
+    }
+
+    const re = await fetch('/api/getStudents', {
+      method: 'GET'
+    });
+    const reResult = await re.json();
+    if (reResult.result) {
+      updateData({
+        studentsData: reResult.result,
+        filteredStudentsData: reResult.result
       });
     }
 
@@ -194,7 +230,7 @@ function AttendanceForm() {
       getInitialData();
       setloading(false);
     }
-  }, []);
+  }, [loading]);
   if (loading) {
     return (
       <div role="status" className="flex justify-center  mt-20">
@@ -436,13 +472,30 @@ function AttendanceForm() {
             <button
               type="button"
               onClick={() => {
+                const currentData = structuredClone(data.selectedProgram);
+                const newData = data.filteredProgramData.filter(
+                  (f) => f.id === currentData?.id
+                )[0];
                 updateData({
+                  selectedProgram: newData,
                   confirmSelected: true
                 });
               }}
               className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
             >
               Mark attendance
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                updateData({
+                  showStudentList: true,
+                  confirmSelected: false
+                });
+              }}
+              className="text-white bg-fuchsia-600 hover:bg-fuchsia-900 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
+            >
+              Add existing students to this program
             </button>
             <button
               type="button"
@@ -459,6 +512,97 @@ function AttendanceForm() {
           </div>
         ) : null}
       </div>
+      {data.showStudentList ? (
+        <div className="ml-40 mr-40 flex-row  items-center justify-center">
+          <p className="  mb-2 text-sm font-medium text-gray-900  mt-5 ">
+            Select or search a student to add to this program
+          </p>
+          <label htmlFor="simple-search" className="sr-only">
+            Search
+          </label>
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg
+                aria-hidden="true"
+                className="w-5 h-5 text-gray-500  "
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </div>
+
+            <input
+              type="text"
+              id="simple-search"
+              onChange={(e) => {
+                const result = data.studentsData.filter(
+                  (s) =>
+                    s.first_name?.includes(e.target.value) ||
+                    s.last_name?.includes(e.target.value) ||
+                    s.student_id.toString().includes(e.target.value)
+                );
+                updateData({ filteredStudentsData: result });
+              }}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500  w-4/5 mb-2  pl-10 p-2.5  "
+              placeholder="Search"
+            />
+          </div>
+          <div className="bg-white rounded-md p-2.5 w-4/5 mb-5 max-h-20 overflow-auto">
+            {data.filteredStudentsData?.map((student, idx) => {
+              return (
+                <a
+                  className="font-medium hover:underline hover:cursor-pointer block"
+                  onClick={() => {
+                    updateData({ selectedStudent: student });
+                  }}
+                >
+                  {`id: ${student.student_id}`}&nbsp; &nbsp;{' '}
+                  {`Name: ${student.first_name} ${student.last_name}`}
+                </a>
+              );
+            })}
+          </div>
+          {data.selectedStudent ? (
+            <div>
+              <p>Selected student: </p>
+
+              <p className="mb-2">
+                id :{data.selectedStudent?.student_id} Name:{' '}
+                {data.selectedStudent?.first_name}{' '}
+                {data.selectedStudent?.last_name}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  addStudentToProgram();
+                }}
+                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
+              >
+                Add to program
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  updateData({
+                    selectedStudent: undefined,
+                    showStudentList: false
+                  });
+                }}
+                className="text-white bg-yellow-600 hover:bg-yellow-800 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {data.selectedProgram && data.confirmSelected ? AddProgramForm() : null}
     </div>
   );

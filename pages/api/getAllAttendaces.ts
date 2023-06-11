@@ -1,3 +1,4 @@
+import { Programs } from '@/models/Programs';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Realm, { Credentials } from 'realm';
 
@@ -7,18 +8,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const data = JSON.parse(req.body);
   try {
     const mongo = app.currentUser?.mongoClient('mongodb-atlas');
     const collection = mongo?.db('attendancetracking').collection('attendance');
-
-    const result = await collection?.insertOne({
-      program_data_id: data.programId,
-      attendance_result: data.attendanceData,
-      session_start_date: data.sessionDate,
-      is_session_one: data.isSessionOne,
-      teacher_id: data.teacherId
-    });
+    const result = (await collection?.find({})) as Programs[];
 
     if (result) {
       res.json({ result });

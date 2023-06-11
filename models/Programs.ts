@@ -11,14 +11,14 @@ export type ProgramOffering = {
 };
 
 export type Programs = {
-  _id: BSON.ObjectId;
+  _id: string;
   program_id: string;
   program_name: string;
   program_offerings: ProgramOffering[];
 };
 
 export type ProgramForTeacher = {
-  id: BSON.ObjectId;
+  id: string;
   program_id: string;
   program_name: string;
   offering: {

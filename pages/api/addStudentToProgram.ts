@@ -1,5 +1,3 @@
-import { ProgramOffering } from '@/models/Programs';
-import { Students } from '@/models/students';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Realm, { BSON } from 'realm';
 
@@ -13,33 +11,10 @@ export default async function handler(
   try {
     const mongo = app.currentUser?.mongoClient('mongodb-atlas');
     const collection = mongo?.db('attendancetracking').collection('programs');
-    // const programResult = await collection?.findOne({
-    //   _id: new BSON.ObjectID(data.programId)
-    // });
-    // const copy = { ...programResult };
-    // copy.program_offerings.map((c: ProgramOffering) => {
-    //   if (c.year === Number(data.year) && c.quarter === data.quarter) {
-    //     c.teachers.map((t: { teacher_id: string; students?: Students[] }) => {
-    //       if (t.teacher_id === data.teacherId) {
-    //         if (t.students) t.students?.push(data.studentData);
-    //         else {
-    //           t.students = [data.studentData];
-    //         }
-    //       }
-    //     });
-    //   }
-    // });
-    // const result = await collection?.updateOne(
-    //   {
-    //     _id: new BSON.ObjectID(data.programId)
-    //   },
-    //   copy
-    // );
+
     const result = await collection?.updateOne(
       {
         _id: new BSON.ObjectID(data.programId)
-        // 'program_offerings.year': Number(data.year),
-        // 'program_offerings.quarter': data.quarter
       },
       {
         $addToSet: {

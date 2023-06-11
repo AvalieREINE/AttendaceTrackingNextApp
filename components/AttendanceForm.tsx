@@ -36,6 +36,7 @@ type FormData = {
   selectedStudentData?: any;
   showStudentList: boolean;
   selectedStudent: any;
+  isSessionOne: boolean;
 };
 
 function AttendanceForm() {
@@ -43,6 +44,8 @@ function AttendanceForm() {
     email: '',
     password: ''
   };
+
+  const cookies = parseCookies();
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (
@@ -52,7 +55,9 @@ function AttendanceForm() {
       const insertData = {
         programId: data.selectedProgram?.id,
         attendanceData: data.attendanceData,
-        sessionDate: data.selectedSessionDate
+        sessionDate: data.selectedSessionDate,
+        isSessionOne: data.isSessionOne,
+        teacherId: cookies.id
       };
 
       const response = await fetch('/api/addAttendance', {
@@ -76,7 +81,6 @@ function AttendanceForm() {
       window.alert('Please mark attendance for all students');
     }
   };
-  const cookies = parseCookies();
 
   const [data, updateData] = useReducer(
     (prev: FormData, next: Partial<FormData>) => {
@@ -103,7 +107,8 @@ function AttendanceForm() {
       filteredStudentsData: [],
       selectedStudentData: undefined,
       showStudentList: false,
-      selectedStudent: undefined
+      selectedStudent: undefined,
+      isSessionOne: true
     }
   );
   const [loading, setloading] = useState(true);
@@ -283,6 +288,46 @@ function AttendanceForm() {
                   showTimeSelect
                   dateFormat="Pp"
                 />
+              </div>
+              <div className="flex-row flex ">
+                <div className="flex items-start mb-6">
+                  <div className="flex items-center h-5">
+                    <input
+                      type="checkbox"
+                      checked={data.isSessionOne}
+                      onChange={(e) => {
+                        updateData({ isSessionOne: e.target.checked });
+                      }}
+                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300  "
+                    />
+                  </div>
+
+                  <label
+                    htmlFor="isInternational"
+                    className="ml-2 text-sm font-medium text-gray-900  "
+                  >
+                    Session one
+                  </label>
+                </div>
+                <div className="flex items-start mb-6  ml-5">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="isInternational"
+                      type="checkbox"
+                      checked={!data.isSessionOne}
+                      onChange={(e) => {
+                        updateData({ isSessionOne: !e.target.checked });
+                      }}
+                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300  "
+                    />
+                  </div>
+                  <label
+                    htmlFor="isInternational"
+                    className="ml-2 text-sm font-medium text-gray-900  "
+                  >
+                    Session two
+                  </label>
+                </div>
               </div>
               {data.selectedProgram?.offering.students?.map((stu) => {
                 return (

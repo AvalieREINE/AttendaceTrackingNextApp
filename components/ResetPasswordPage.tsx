@@ -4,11 +4,12 @@ import {
   formValidityReducer,
   initialValidityState
 } from '@/utils/FormValidation';
+import { sendEmailReminder } from '@/utils/sendEmail';
 import { useRouter } from 'next/router';
 import { setCookie } from 'nookies';
 import React, { useReducer, useState } from 'react';
 
-function SignInPage() {
+function ResetPasswordPage() {
   const router = useRouter();
   const initialState: FormState = {
     email: '',
@@ -29,12 +30,10 @@ function SignInPage() {
     event.preventDefault();
 
     const data = {
-      email: formData.email,
-      password: formData.password,
-      remember
+      email: formData.email
     };
 
-    const response = await fetch('/api/signin', {
+    const response = await fetch('/api/resetPassword', {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -43,14 +42,13 @@ function SignInPage() {
     if (response.status !== 200) {
       setShowSubmitError({ show: true, message: result.result });
     } else {
-      setCookie(null, 'token', result.result);
-      setCookie(null, 'role', result.role);
-      setCookie(null, 'id', result.id);
-      if (result.role === process.env.NEXT_PUBLIC_ADMIN_ROLE_STRING) {
-        router.push('/admin');
-      } else {
-        router.push('/');
-      }
+      // call email function
+      const emailMessage = `You have requested to reset your password. \n Please use ${result.password} to login`;
+      const info = {
+        name: '',
+        email: formData.email
+      };
+      sendEmailReminder(emailMessage, info, null, alert);
     }
 
     setFormData({
@@ -58,13 +56,20 @@ function SignInPage() {
       payLoad: initialState
     });
   };
+  const alert = () => {
+    window.alert('email sent');
+  };
   return (
     <div className="flex min-h-full items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Sign in to your account
+            Reset Password
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Please enter your email address and we will send you an email with
+            temporary password
+          </p>
           <p className="mt-2 text-center text-sm text-gray-600">
             Don't have an account yet?
             <a
@@ -105,67 +110,6 @@ function SignInPage() {
                 placeholder="Email address"
               />
             </div>
-            <div className="flex flex-row">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type={`${showPassword ? 'text' : 'password'}`}
-                onChange={(e) => {
-                  setFormData({
-                    type: 'UPDATE_PASSWORD',
-                    payLoad: e.target.value
-                  });
-                  setFormValidityData({
-                    type: 'VALIDATE_PASSWORD',
-                    payLoad: { ...formData, password: e.target.value }
-                  });
-                }}
-                required
-                className={`${
-                  formValidityData.passwordError && 'bg-red-300'
-                } relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6`}
-                placeholder="Password"
-              />
-              <div
-                className="z-10 -ml-8 mt-2"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <i className="fa-regular fa-eye"></i>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                onChange={(e) => {
-                  setRemember(e.target.checked);
-                }}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-              />
-              <label
-                htmlFor="remember-me"
-                className="ml-2 block text-sm text-gray-900"
-              >
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a
-                href="#"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-                onClick={() => router.push('/resetPassword')}
-              >
-                Forgot your password?
-              </a>
-            </div>
           </div>
 
           <div>
@@ -196,7 +140,7 @@ function SignInPage() {
                   />
                 </svg>
               </span>
-              Sign in
+              Reset password
             </button>
             {showSubmitError.show && (
               <p className="text-center text-pink-600 mt-2">
@@ -210,4 +154,4 @@ function SignInPage() {
   );
 }
 
-export default SignInPage;
+export default ResetPasswordPage;

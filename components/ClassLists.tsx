@@ -6,6 +6,7 @@ import { Students } from '@/models/students';
 import { ProgramForTeacher, Programs } from '@/models/Programs';
 import { parseCookies } from 'nookies';
 import { Users } from '@/models/users';
+import { sendEmailReminder } from '@/utils/sendEmail';
 
 type FormData = {
   programList: Programs[];
@@ -14,32 +15,8 @@ type FormData = {
 };
 const ClassLists = () => {
   const [showToast, setShowToast] = useState(false);
-  const sendEmailReminder = (studentInfo: any) => {
-    const content = {
-      to_name: studentInfo.name,
-      to_email: studentInfo.email,
-      message: 'You have missed your class'
-    };
-    emailjs
-      .send(
-        process.env.NEXT_PUBLIC_EMAIL_SERVICE_ID ?? '',
-        process.env.NEXT_PUBLIC_EMAIL_TEMPLATE_ID ?? '',
-        content,
-        process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY ?? ''
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 3000);
-        },
-        (error) => {
-          console.log(error.text);
-        }
-      );
-  };
+  const emailMessage =
+    'You have missed your class. \n If you have any questions, please contact your lecturer.';
   const [data, updateData] = useReducer(
     (prev: FormData, next: Partial<FormData>) => {
       return { ...prev, ...next };
@@ -180,7 +157,13 @@ const ClassLists = () => {
                             </td>
                             <td className=" w-1/14  text-left py-3 px-4">
                               <button
-                                onClick={() => sendEmailReminder(student)}
+                                onClick={() =>
+                                  sendEmailReminder(
+                                    emailMessage,
+                                    student,
+                                    setShowToast
+                                  )
+                                }
                                 className="hover:rounded-full rounded-lg bg-indigo-700 text-white p-2"
                               >
                                 Send reminder
@@ -276,7 +259,13 @@ const ClassLists = () => {
                             </td>
                             <td className=" w-1/14  text-left py-3 px-4">
                               <button
-                                onClick={() => sendEmailReminder(student)}
+                                onClick={() =>
+                                  sendEmailReminder(
+                                    emailMessage,
+                                    student,
+                                    setShowToast
+                                  )
+                                }
                                 className="hover:rounded-full rounded-lg bg-indigo-700 text-white p-2"
                               >
                                 Send reminder

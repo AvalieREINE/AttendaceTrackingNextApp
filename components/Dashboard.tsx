@@ -81,7 +81,7 @@ const Dashboard = () => {
     if (result.result && programs.result) {
       var ctx = (
         document.getElementById('myChart') as HTMLCanvasElement
-      ).getContext('2d');
+      )?.getContext('2d');
       let initChart = {
         type: 'bar',
         data: {

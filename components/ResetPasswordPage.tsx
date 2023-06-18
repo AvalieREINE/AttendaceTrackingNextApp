@@ -25,7 +25,7 @@ function ResetPasswordPage() {
     show: false,
     message: ''
   });
-  const [remember, setRemember] = useState(false);
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -141,6 +141,14 @@ function ResetPasswordPage() {
                 </svg>
               </span>
               Reset password
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push('/signin')}
+              className={`my-2 group relative flex w-full justify-center rounded-md ${'bg-indigo-600 hover:bg-indigo-500'} px-3 py-2 text-sm font-semibold text-white  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+            >
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3"></span>
+              Back to login
             </button>
             {showSubmitError.show && (
               <p className="text-center text-pink-600 mt-2">

@@ -26,38 +26,33 @@ function AccountDetails() {
   });
   const [password, setPassword] = useState('');
   const [confirmtPassword, setConfirmPassword] = useState('');
+  const [showError, setShowError] = useState(false);
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const data = {
-      email: formData.email
-    };
-
-    const response = await fetch('/api/resetPassword', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    const result = await response.json();
-
-    if (response.status !== 200) {
-      setShowSubmitError({ show: true, message: result.result });
-    } else {
-      // call email function
-      const emailMessage = `You have requested to reset your password. \n Please use ${result.password} to login`;
-      const info = {
-        name: '',
-        email: formData.email
+    setShowError(false);
+    if (password === confirmtPassword && password.length > 10) {
+      const data = {
+        password: password
       };
-    }
 
-    setFormData({
-      type: 'RESET_FORM',
-      payLoad: initialState
-    });
+      const response = await fetch('/api/resetPasswordWithAuth', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+
+      if (response.status !== 200) {
+        setShowSubmitError({ show: true, message: result.result });
+      } else {
+        window.alert('Password has been updated');
+      }
+    } else {
+      setShowError(true);
+    }
+    setConfirmPassword('');
+    setPassword('');
   };
-  const alert = () => {
-    window.alert('email sent');
-  };
+
   return (
     <div className="flex min-h-full   justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -77,8 +72,7 @@ function AccountDetails() {
                 Password
               </label>
               <input
-                id="password"
-                name="password"
+                value={password}
                 type={`${showPassword ? 'text' : 'password'}`}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -101,8 +95,7 @@ function AccountDetails() {
                 Confirm password
               </label>
               <input
-                id="password"
-                name="password"
+                value={confirmtPassword}
                 type={`${showPassword ? 'text' : 'password'}`}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
@@ -124,13 +117,8 @@ function AccountDetails() {
 
           <div>
             <button
-              disabled={!formValidityData.isFormValid}
               type="submit"
-              className={`group relative flex w-full justify-center rounded-md ${
-                formValidityData.isFormValid
-                  ? 'bg-indigo-600 hover:bg-indigo-500'
-                  : 'bg-slate-400'
-              } px-3 py-2 text-sm font-semibold text-white  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
+              className={`group relative flex w-full justify-center rounded-md ${'bg-indigo-600 hover:bg-indigo-500'} px-3 py-2 text-sm font-semibold text-white  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
             >
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
@@ -155,6 +143,11 @@ function AccountDetails() {
             {showSubmitError.show && (
               <p className="text-center text-pink-600 mt-2">
                 Error: {showSubmitError.message}
+              </p>
+            )}
+            {showError && (
+              <p className="text-center text-pink-600 mt-2">
+                Passwords need to match and be longer than 10 characters
               </p>
             )}
           </div>

@@ -1,7 +1,7 @@
 import { Shojumaru } from 'next/font/google';
 import { useRouter } from 'next/router';
 import React, { createRef, useEffect, useRef, useState } from 'react';
-import Dashboard from './Dashboard';
+import AdminDashboard from './AdminDashboard';
 import ClassLists from './ClassLists';
 import AddProgramForm from './AddProgramForm';
 import { destroyCookie } from 'nookies';
@@ -35,7 +35,7 @@ function AdminHomePage() {
   const Contents = () => {
     switch (selectedContent) {
       case ContentTypes.DASHBOARD:
-        return <Dashboard />;
+        return <AdminDashboard />;
       case ContentTypes.CLASSLISTS:
         return <ClassLists />;
       case ContentTypes.ADD_PROGRAM:
@@ -125,14 +125,6 @@ function AdminHomePage() {
               <i className="fas fa-sticky-note mr-3"></i>
               Class Lists
             </button>
-
-            <a
-              href="/home"
-              className=" flex items-center  text-white py-4 pl-6 nav-item "
-            >
-              <i className="fas fa-sticky-note mr-3"></i>
-              Other
-            </a>
           </div>
         </aside>
       ) : null}
@@ -216,9 +208,9 @@ function AdminHomePage() {
                 Dashboard
               </button>
               <button
-                onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}
+                onClick={() => setSelectedContent(ContentTypes.IMPORTDATA)}
                 className={`w-full flex items-center text-white py-2 pl-6   ${
-                  selectedContent === ContentTypes.CLASSLISTS
+                  selectedContent === ContentTypes.IMPORTDATA
                     ? 'bg-black'
                     : 'nav-item'
                 }`}
@@ -238,9 +230,9 @@ function AdminHomePage() {
                 Class Lists
               </button>
               <button
-                onClick={() => setSelectedContent(ContentTypes.ACCOUNT)}
+                onClick={() => setSelectedContent(ContentTypes.ACCOUNT_DETAILS)}
                 className={`w-full flex items-center text-white py-2 pl-6   ${
-                  selectedContent === ContentTypes.ACCOUNT
+                  selectedContent === ContentTypes.ACCOUNT_DETAILS
                     ? 'bg-black'
                     : 'nav-item'
                 }`}

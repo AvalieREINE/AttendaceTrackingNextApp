@@ -40,6 +40,7 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
       }
     } catch (error) {
+      url.pathname = '/signin';
       return NextResponse.redirect(url);
     }
   } else if (pathname === '/') {
@@ -57,6 +58,8 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
       }
     } catch (error) {
+      url.pathname = '/signin';
+
       return NextResponse.redirect(url);
     }
   } else {
@@ -68,6 +71,7 @@ export function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
       }
     } catch (error) {
+      url.pathname = '/signin';
       return NextResponse.redirect(url);
     }
   }

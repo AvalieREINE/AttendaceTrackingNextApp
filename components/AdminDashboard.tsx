@@ -33,16 +33,15 @@ const Dashboard = () => {
   const quarterEndTimestamp = moment().endOf('quarter').toDate().getTime();
 
   const getInitialData = useCallback(async () => {
-    const response = await fetch('/api/getAttendanceById', {
-      method: 'POST',
-      body: JSON.stringify({ teacherId: cookies.id })
+    const response = await fetch('/api/getAllAttendaces', {
+      method: 'GET'
     });
     const result = await response.json();
-    const programResult = await fetch('/api/getProgramsForTeacher', {
-      method: 'POST',
-      body: JSON.stringify({ teacherId: cookies.id })
+    const programResult = await fetch('/api/getAllPrograms', {
+      method: 'GET'
     });
     const programs = await programResult.json();
+
     if (result.result && programs.result) {
       var ctx = (
         document.getElementById('myChart') as HTMLCanvasElement
@@ -191,6 +190,7 @@ const Dashboard = () => {
           initQuarterChart.data?.datasets[3]?.data?.push(0);
         }
       }
+
       var myChart = ctx && new Chart(ctx, initChart);
       var myChart = ctx2 && new Chart(ctx2, initQuarterChart);
     }

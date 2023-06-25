@@ -26,20 +26,7 @@ function HomePage() {
   const [selectedContent, setSelectedContent] = useState<number>(0);
   const router = useRouter();
   const ref: any = useRef(null);
-  // useEffect(() => {
-  //   const checkIfClickedOutside = (e: any) => {
-  //     if (!ref.current.contains(e.target)) {
-  //       setShowDropDown(false);
-  //     }
-  //   };
-  //   console.log(ref, 'clickRef home page');
 
-  //   document.addEventListener('click', checkIfClickedOutside, true);
-
-  //   return () => {
-  //     document.removeEventListener('click', checkIfClickedOutside, true);
-  //   };
-  // }, [showDropDown]);
   const onBlur = (event: any) => {
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setShowDropDown(false);
@@ -197,7 +184,9 @@ function HomePage() {
         <header className="w-full bg-sidebar py-5 px-6 sm:hidden">
           <div className="flex items-center justify-between">
             {/* user types */}
-            <p className="text-white text-3xl font-semibold uppercase">Admin</p>
+            <p className="text-white text-3xl font-semibold uppercase">
+              Teacher
+            </p>
             <button
               className="text-white   focus:outline-none"
               onClick={() => setShowSideMenu(!showSideMenu)}
@@ -224,9 +213,9 @@ function HomePage() {
                 Dashboard
               </button>
               <button
-                onClick={() => setSelectedContent(ContentTypes.CLASSLISTS)}
+                onClick={() => setSelectedContent(ContentTypes.IMPORTDATA)}
                 className={`w-full flex items-center text-white py-2 pl-6   ${
-                  selectedContent === ContentTypes.CLASSLISTS
+                  selectedContent === ContentTypes.IMPORTDATA
                     ? 'bg-black'
                     : 'nav-item'
                 }`}
@@ -246,9 +235,9 @@ function HomePage() {
                 Class Lists
               </button>
               <button
-                onClick={() => setSelectedContent(ContentTypes.ACCOUNT)}
+                onClick={() => setSelectedContent(ContentTypes.ACCOUNT_DETAILS)}
                 className={`w-full flex items-center text-white py-2 pl-6   ${
-                  selectedContent === ContentTypes.ACCOUNT
+                  selectedContent === ContentTypes.ACCOUNT_DETAILS
                     ? 'bg-black'
                     : 'nav-item'
                 }`}
